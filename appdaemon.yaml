@@ -1,0 +1,22 @@
+appdaemon:
+  time_zone: !secret timezone
+  latitude: !secret latitude
+  longitude: !secret longitude
+  elevation: !secret elevation
+  plugins:
+    homeassistant:
+      type: hass
+      namespace: homeassistant
+      ha_url: !secret ha_url
+      token: !secret ha_token
+    mqtt:
+      type: mqtt
+      namespace: mqtt
+      client_host: !secret mqtt_host
+      client_port: 1883
+      client_user: !secret mqtt_user
+      client_password: !secret mqtt_password
+http:
+  url: http://0.0.0.0:5050
+api:
+admin:

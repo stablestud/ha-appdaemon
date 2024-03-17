@@ -1,0 +1,16 @@
+AirFilter3DPrinter:
+  module: airfilter3dprinter
+  class: AirFilter3DPrinter
+  entity_door: "binary_sensor.0xa4c138821696c04c_contact"
+  entity_fan: "fan.smartmi_air_purifier_e1"
+  entity_air_dirty: "input_boolean.appdaemon_airfilter3dprinter_air_dirty"
+  entity_printer: "binary_sensor.3d_printer_printing"
+  entity_timer_door_opened: "timer.appdaemon_airfilter3dprinter_door_opened"
+  entity_timer_print_ended: "timer.appdaemon_airfilter3dprinter_print_ended"
+  entity_timestamp_print_started: "input_datetime.appdaemon_airfilter3dprinter_print_started"
+  entity_timestamp_print_ended: "input_datetime.appdaemon_airfilter3dprinter_print_ended"
+ChamberTempFix3DPrinter:
+  module: chambertempfix
+  class: ChamberTempFix3DPrinter
+  entity_temp_source: "zigbee2mqtt/3D Printer Enclosure Temperatur"
+  entity_temp_target: "homeassistant/sensor/0xa4c1388c98578139/temperature"
