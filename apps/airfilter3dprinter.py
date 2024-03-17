@@ -81,17 +81,17 @@ class AirFilter3DPrinter(ha.Hass):
             # Calculated fan time after print by 1/6 of print duration
             fan_time = int(print_duration)/6
             # Check if malformed print duration
-            if print_duration > 0:
+            if fan_time > 0:
                 self.log(f"Previous print duration {self.secs_to_str(print_duration)}")
                 # If less than 3m calculated fan time enforce 3m
-                if print_duration/6 < 3*60:
+                if fan_time < 3*60:
                     fan_time = 3*60
                 # If more than 30m calculated fan time enforce 30m
-                elif print_duration/6 > 30*60:
+                elif fan_time > 30*60:
                     fan_time = 30*60
             # Use fallback fan time of 5m
             else:
-                fan_time = 5*30
+                fan_time = 5*60
             self.start_timer_door_opened(fan_time)
             self.add_fan_usage_door_opened(self.FanSpeed.NORMAL)
             self.clear_air_dirty()
