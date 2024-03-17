@@ -17,6 +17,7 @@ appdaemon:
       client_user: !secret mqtt_user
       client_password: !secret mqtt_password
 http:
-  url: http://0.0.0.0:5050
+  url: http://127.0.0.1:5050
 api:
 admin:
+hadashboard:
