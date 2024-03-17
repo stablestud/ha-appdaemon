@@ -11,6 +11,7 @@ appdaemon:
       token: !secret ha_token
     mqtt:
       type: mqtt
+      client_id: !secret mqtt_client
       namespace: mqtt
       client_host: !secret mqtt_host
       client_port: 1883
