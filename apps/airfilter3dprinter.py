@@ -63,7 +63,7 @@ class AirFilter3DPrinter(ha.Hass):
         self.start_timer_print_ended(10*60)
         self.add_fan_usage_printing(self.FanSpeed.SLOW)
         if self.is_door_open():
-            self.start_timer_door_opened(10*60)
+            self.start_timer_door_opened(15*60)
             self.add_fan_usage_door_opened(self.FanSpeed.NORMAL)
             self.clear_air_dirty()
         else:
@@ -83,15 +83,15 @@ class AirFilter3DPrinter(ha.Hass):
             # Check if malformed print duration
             if fan_time > 0:
                 self.log(f"Previous print duration {self.secs_to_str(print_duration)}")
-                # If less than 3m calculated fan time enforce 3m
-                if fan_time < 3*60:
-                    fan_time = 3*60
-                # If more than 30m calculated fan time enforce 30m
-                elif fan_time > 30*60:
-                    fan_time = 30*60
-            # Use fallback fan time of 5m
+                # If less than 5m calculated fan time enforce 5m
+                if fan_time < 5*60:
+                    fan_time = 5*60
+                # If more than 45m calculated fan time enforce 45m
+                elif fan_time > 45*60:
+                    fan_time = 45*60
+            # Use fallback fan time of 10m
             else:
-                fan_time = 5*60
+                fan_time = 10*60
             self.start_timer_door_opened(fan_time)
             self.add_fan_usage_door_opened(self.FanSpeed.NORMAL)
             self.clear_air_dirty()
@@ -146,7 +146,7 @@ class AirFilter3DPrinter(ha.Hass):
 
 
     def is_timer_door_opened_active(self):
-        return self.timer_print_ended.get_state("state") == "active"
+        return self.timer_door_opened.get_state("state") == "active"
 
 
     def is_timer_print_ended_active(self):
@@ -154,20 +154,22 @@ class AirFilter3DPrinter(ha.Hass):
 
 
     def cancel_timer_door_opened(self):
+        self.log("Cancelling timer 'Door opened'")
         self.timer_door_opened.call_service("cancel")
 
 
     def cancel_timer_print_ended(self):
+        self.log("Cancelling timer 'Print ended'")
         self.timer_print_ended.call_service("cancel")
 
 
     def start_timer_door_opened(self, duration):
-        self.log(f"Starting Timer 'Door opened' for {self.secs_to_str(duration)}")
+        self.log(f"Starting timer 'Door opened' for {self.secs_to_str(duration)}")
         self.timer_door_opened.call_service("start", duration = duration)
 
 
     def start_timer_print_ended(self, duration):
-        self.log(f"Starting Timer 'Print ended' for {self.secs_to_str(duration)}")
+        self.log(f"Starting timer 'Print ended' for {self.secs_to_str(duration)}")
         self.timer_print_ended.call_service("start", duration = duration)
 
 
