@@ -19,6 +19,6 @@ class ChamberTempFix3DPrinter(mqtt.Mqtt):
         values = json.loads(data["payload"])
         temp = values["temperature"]
         if isinstance(temp, numbers.Number):
-            self.log(f"Updating Chamber Temp to {temp}")
+            self.log(f"Updating chamber temp to {temp}")
             self.mqtt_publish(self.args["entity_temp_target"], payload = temp)
 
