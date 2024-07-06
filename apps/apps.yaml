@@ -27,3 +27,11 @@ StoreroomMotion:
   entity_timer: "timer.appdaemon_storeroommotion_light_timeout"
   motion_timeout: 10
   manual_timeout: 60
+AirGradientLedsAdjust:
+  module: airgradientledsadjust
+  class: AirGradientLedsAdjust
+  entities_ledbar:
+    - "number.i_9psl_led_bar_brightness"
+  entities_display:
+    - "number.i_9psl_display_brightness"
+  entity_timer: "binary_sensor.appdaemon_airgradientledsadjust_timer"
