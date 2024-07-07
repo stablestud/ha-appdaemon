@@ -35,3 +35,8 @@ AirGradientLedsAdjust:
   entities_display:
     - "number.i_9psl_display_brightness"
   entity_timer: "binary_sensor.appdaemon_airgradientledsadjust_timer"
+WashingMachineTimer:
+  module: washingmachinetimer
+  class: WashingMachineTimer
+  entity_time: "input_datetime.appdaemon_washingmachinetimer_time"
+  entity_switch: "switch.0xa4c138b870fa6bd7"
