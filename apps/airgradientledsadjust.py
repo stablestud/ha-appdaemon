@@ -42,9 +42,9 @@ class AirGradientLedsAdjust(ha.Hass):
     def make_dimm(self):
         self.log("Dimming AirGradient devices")
         for display in self.displays:
-            display.call_service("set_value", value=1)
+            display.call_service("set_value", value=0)
         for ledbar in self.ledbars:
-            ledbar.call_service("set_value", value=15)
+            ledbar.call_service("set_value", value=5)
 
 
     def make_bright(self):
