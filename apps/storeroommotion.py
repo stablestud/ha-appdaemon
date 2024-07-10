@@ -53,7 +53,9 @@ class StoreroomMotion(ha.Hass):
         self.log("Motion detected")
         # If manually actived light
         if self.state == self.TriggerMode.MANUAL:
-            self.start_timer(self.manual_timeout)
+            self.log("Switching to motion based turn off")
+            self.state == self.TriggerMode.MOTION
+            self.timer.call_service("cancel")
         else:
             self.state = self.TriggerMode.MOTION
             self.turn_on_light()

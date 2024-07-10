@@ -25,8 +25,8 @@ StoreroomMotion:
   entity_sensor: "binary_sensor.0xa4c1389a61a3589f_occupancy"
   entity_switch: "switch.0xa4c13884518f1949"
   entity_timer: "timer.appdaemon_storeroommotion_light_timeout"
-  motion_timeout: 10
-  manual_timeout: 60
+  motion_timeout: 5
+  manual_timeout: 15
 AirGradientLedsAdjust:
   module: airgradientledsadjust
   class: AirGradientLedsAdjust
