@@ -36,8 +36,12 @@ class StoreroomMotion(ha.Hass):
         if self.is_ignore_action():
             return
         self.log("Switch manually ON")
-        self.state = self.TriggerMode.MANUAL
-        self.start_timer(self.manual_timeout)
+        if self.is_occupied():
+            self.log("Motion sensor already active, switching to motion based trigger")
+            self.state = self.TriggerMode.MOTION
+        else:
+            self.state = self.TriggerMode.MANUAL
+            self.start_timer(self.manual_timeout)
 
     
     def switch_off(self, entity, attribute, old, new, cb_args):
@@ -80,6 +84,10 @@ class StoreroomMotion(ha.Hass):
 
     def is_timer_active(self):
         return self.timer.get_state("state") == "active"
+
+
+    def is_occupied(self):
+        return self.sensor.get_state("state") == "on"
 
 
     def is_ignore_action(self):
