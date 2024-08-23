@@ -40,3 +40,10 @@ WashingMachineTimer:
   class: WashingMachineTimer
   entity_time: "input_datetime.appdaemon_washingmachinetimer_time"
   entity_switch: "switch.0xa4c138b870fa6bd7"
+HAPowerOffNotifier:
+  module: hapoweroffnotifier
+  class: HAPowerOffNotifier
+  entity_power: "switch.0x70b3d52b6008ac57"
+  notify_targets:
+    - "pushover"
+    - "persistent_notification"
