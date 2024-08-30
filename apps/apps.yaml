@@ -19,6 +19,10 @@ Firealarm3DPrinter:
   class: Firealarm3DPrinter
   entity_alarm_source: "zigbee2mqtt/3D Printer Smoke Detector"
   entity_alarm_target: "zigbee2mqtt/3D Printer Power"
+  notify_targets:
+    - "pushover"
+    - "persistent_notification"
+    - "notify"
 StoreroomMotion:
   module: storeroommotion
   class: StoreroomMotion
