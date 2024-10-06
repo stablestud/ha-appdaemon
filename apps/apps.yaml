@@ -44,10 +44,47 @@ WashingMachineTimer:
   class: WashingMachineTimer
   entity_time: "input_datetime.appdaemon_washingmachinetimer_time"
   entity_switch: "switch.0xa4c138b870fa6bd7"
-HAPowerOffNotifier:
-  module: hapoweroffnotifier
-  class: HAPowerOffNotifier
-  entity_power: "switch.0x70b3d52b6008ac57"
-  notify_targets:
-    - "pushover"
-    - "persistent_notification"
+StateOffNotifier:
+  module: stateoffnotifier
+  class: StateOffNotifier
+  states:
+    - name: "Smarthome Power"
+      msg_on: "RECOVERY: Smarthome power is now back ONLINE ({new})"
+      msg_off: "WARNING: Smarthome power went OFFLINE ({new}), running now on UPS"
+      listen_entity: "switch.0x70b3d52b6008ac57"
+      notify_targets:
+        - "pushover"
+        - "persistent_notification"
+    - name: "Fridge Power"
+      msg_on: "RECOVERY: Fridge power is now back ONLINE ({new})"
+      msg_off: "WARNING: Fridge power went OFFLINE ({new}), products may start to go bad"
+      listen_entity: "switch.0x70b3d52b6005d45a"
+      notify_targets:
+        - "pushover"
+        - "persistent_notification"
+        - "notify"
+    - name: "3D Printer Power"
+      msg_on: "RECOVERY: 3D Printer power is now back ONLINE ({new})"
+      msg_off: "WARNING: 3D Printer power went OFFLINE ({new}), print might have failed"
+      listen_entity: "switch.0x914805602bd5b370"
+      notify_targets:
+        - "pushover"
+    - name: "Internet Power"
+      msg_on: "RECOVERY: Internet power is now back ONLINE ({new})"
+      msg_off: "WARNING: Internet power went OFFLINE ({new}), we are completely blind"
+      listen_entity: "switch.0x70b3d52b6009898c"
+      notify_targets:
+        - "pushover"
+        - "persistent_notification"
+    - name: "Computer Power"
+      msg_on: "RECOVERY: Computer power is now back ONLINE ({new})"
+      msg_off: "WARNING: Computer power went OFFLINE ({new}), might have lossed some unsaved data"
+      listen_entity: "switch.0x70b3d52b6007823f"
+      notify_targets:
+        - "pushover"
+    - name: "Dishwasher Power"
+      msg_on: "RECOVERY: Dishwasher power is now back ONLINE ({new})"
+      msg_off: "WARNING: Dishwasher power went OFFLINE ({new}), might have interrupted mid washing"
+      listen_entity: "switch.0xa4c1387f849f5ade"
+      notify_targets:
+        - "pushover"
