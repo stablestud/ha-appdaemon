@@ -4,7 +4,19 @@ import numbers
 import mqttapi as mqtt
 
 
-class External3DPrinterSensors(mqtt.Mqtt):
+'''
+Copies and filters published MQTT messages to a different topic, and retains them
+This is useful if some values from an MQTT topic must be retained on the broker but the publisher does not dot that.
+With this we can enforce that (kinda a workaround) and addtionally filter only the required values out
+
+Configuration example:
+- source: "zigbee2mqtt/3D Printer Enclosure Temperature"
+  target: "3dprinter/external_sensors/chamber"
+  values:
+    - "temperature"
+'''
+
+class MQTTStateRetainer(mqtt.Mqtt):
 
     REQUIRED_FIELDS = ["source", "target", "values"]
 

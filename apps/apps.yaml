@@ -9,9 +9,9 @@ AirFilter3DPrinter:
   entity_timer_print_ended: "timer.appdaemon_airfilter3dprinter_print_ended"
   entity_timestamp_print_started: "input_datetime.appdaemon_airfilter3dprinter_print_started"
   entity_timestamp_print_ended: "input_datetime.appdaemon_airfilter3dprinter_print_ended"
-External3DPrinterSensors:
-  module: external3dprintersensors
-  class: External3DPrinterSensors
+MQTTStateRetainer:
+  module: mqttstateretainer
+  class: MQTTStateRetainer
   entities:
     - source: "zigbee2mqtt/3D Printer Enclosure Temperature"
       target: "3dprinter/external_sensors/chamber"
@@ -25,6 +25,10 @@ External3DPrinterSensors:
         - "voltage"
         - "current"
         - "energy"
+    - source: "zigbee2mqtt/3D Printer Enclosure Light"
+      target: "3dprinter/external_sensors/light"
+      values:
+        - "state"
 Firealarm3DPrinter:
   module: firealarm3dprinter
   class: Firealarm3DPrinter
