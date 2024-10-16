@@ -13,7 +13,7 @@ ChamberTempFix3DPrinter:
   module: chambertempfix
   class: ChamberTempFix3DPrinter
   entity_temp_source: "zigbee2mqtt/3D Printer Enclosure Temperature"
-  entity_temp_target: "homeassistant/sensor/0xa4c1388c98578139/temperature"
+  entity_temp_target: "3dprinter/homeassistant/sensor/chamber/temperature"
 Firealarm3DPrinter:
   module: firealarm3dprinter
   class: Firealarm3DPrinter
