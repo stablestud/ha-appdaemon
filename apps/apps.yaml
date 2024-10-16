@@ -9,11 +9,22 @@ AirFilter3DPrinter:
   entity_timer_print_ended: "timer.appdaemon_airfilter3dprinter_print_ended"
   entity_timestamp_print_started: "input_datetime.appdaemon_airfilter3dprinter_print_started"
   entity_timestamp_print_ended: "input_datetime.appdaemon_airfilter3dprinter_print_ended"
-ChamberTempFix3DPrinter:
-  module: chambertempfix
-  class: ChamberTempFix3DPrinter
-  entity_temp_source: "zigbee2mqtt/3D Printer Enclosure Temperature"
-  entity_temp_target: "3dprinter/homeassistant/sensor/chamber/temperature"
+External3DPrinterSensors:
+  module: external3dprintersensors
+  class: External3DPrinterSensors
+  entities:
+    - source: "zigbee2mqtt/3D Printer Enclosure Temperature"
+      target: "3dprinter/external_sensors/chamber"
+      values:
+        - "temperature"
+        - "humidity"
+    - source: "zigbee2mqtt/3D Printer Power"
+      target: "3dprinter/external_sensors/power"
+      values:
+        - "power"
+        - "voltage"
+        - "current"
+        - "energy"
 Firealarm3DPrinter:
   module: firealarm3dprinter
   class: Firealarm3DPrinter
