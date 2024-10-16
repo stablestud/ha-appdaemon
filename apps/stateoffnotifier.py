@@ -1,6 +1,25 @@
 import hassapi as ha
 
 
+'''
+Notify on state changes
+This notifies different notify targets (Pushover, etc) with custom messages if state has changed
+
+Configuration:
+- name: "Smarthome Power"
+  msg_on: "RECOVERY: Smarthome power is now back ONLINE ({new})"
+  msg_off: "WARNING: Smarthome power went OFFLINE ({new}), running now on UPS"
+  listen_entity: "switch.0x70b3d52b6008ac57"
+  notify_targets:
+    - "pushover"
+    - "persistent_notification"
+  states_on:
+    - "on"
+  states_off:
+    - "off"
+    - "unknown"
+    - "unavailable"
+'''
 class StateOffNotifier(ha.Hass):
 
     DEFAULT_OFF_STATES = ["off", "unavailable", "unknown"]
@@ -31,18 +50,18 @@ class StateOffNotifier(ha.Hass):
             raise KeyError(f"Missing state obj fields: {', '.join(missing_keys)}")
 
     def get_off_lambda(self, service):
-        if "off_states" in service:
-            return lambda s: s in service["off_states"]
-        elif "on_states" in service:
-            return lambda s: s not in service["on_states"]
+        if "states_off" in service:
+            return lambda s: s in service["states_off"]
+        elif "states_on" in service:
+            return lambda s: s not in service["states_on"]
         else:
             return lambda s: s in self.DEFAULT_OFF_STATES
 
     def get_on_lambda(self, service):
-        if "on_states" in service:
-            return lambda s: s in service["on_states"]
-        elif "off_states" in service:
-            return lambda s: s not in service["off_states"]
+        if "states_on" in service:
+            return lambda s: s in service["states_on"]
+        elif "states_off" in service:
+            return lambda s: s not in service["states_off"]
         else:
             return lambda s: s not in self.DEFAULT_OFF_STATES
 
