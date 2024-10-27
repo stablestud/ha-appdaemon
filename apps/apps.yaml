@@ -4,7 +4,7 @@ AirFilter3DPrinter:
   entity_door: "binary_sensor.0xa4c138821696c04c_contact"
   entity_fan: "fan.smartmi_air_purifier_e1"
   entity_air_dirty: "input_boolean.appdaemon_airfilter3dprinter_air_dirty"
-  entity_printer: "binary_sensor.ender_3_max_printing"
+  entity_printer: "sensor.3d_printer_current_print_state"
   entity_timer_door_opened: "timer.appdaemon_airfilter3dprinter_door_opened"
   entity_timer_print_ended: "timer.appdaemon_airfilter3dprinter_print_ended"
   entity_timestamp_print_started: "input_datetime.appdaemon_airfilter3dprinter_print_started"
