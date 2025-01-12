@@ -1,0 +1,9 @@
+[project]
+name = "ha-appdaemon"
+version = "1.0.0"
+description = "Personal HomeAssistant automations created via AppDaemon"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "appdaemon>=4.4.2",
+]
