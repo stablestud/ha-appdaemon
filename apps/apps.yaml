@@ -19,6 +19,13 @@ MQTTStateRetainer:
       values:
         - "temperature"
         - "humidity"
+    - source: "zigbee2mqtt/3D Printer Air Monitor"
+      target: "3dprinter/external_sensors/chamber2"
+      values:
+        - "temperature"
+        - "humidity"
+        - "pm25"
+        - "voc_index"
     - source: "zigbee2mqtt/3D Printer Power"
       target: "3dprinter/external_sensors/power"
       values:
