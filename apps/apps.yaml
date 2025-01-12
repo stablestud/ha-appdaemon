@@ -104,3 +104,9 @@ StateOffNotifier:
       listen_entity: "switch.0xa4c1387f849f5ade"
       notify_targets:
         - "pushover"
+    - name: "Washmachine Leakage"
+      msg_on: "WARNING: Washing machine is leaking water"
+      msg_off: "RECOVERY: Washing machine leakage has been cleared"
+      listen_entity: "binary_sensor.0xa4c138bf9c6513df_water_leak"
+      notify_targets:
+        - "pushover"
