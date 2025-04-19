@@ -8,40 +8,41 @@ class WashingMachineTimer(ha.Hass):
         self.timer = None
         self.initialize_args()
         self.initialize_listen_states()
-
+        self.initialize_timer()
 
     def initialize_args(self):
         self.time = self.get_entity(self.args["entity_time"])
         self.switch = self.get_entity(self.args["entity_switch"])
 
-
     def initialize_listen_states(self):
-        self.switch.listen_state(self.switch_on, new="on")
         self.time.listen_state(self.time_updated, attribute="timestamp")
 
+    def initialize_timer(self):
+        new = self.time.get_state(attribute="timestamp")
+        new_time = datetime.fromtimestamp(new).replace(microsecond=0)
+        if new_time > self.now():
+            self.setup_timer(new_time)
 
-    def switch_on(self, entity, attribute, old, new, cb_args):
-        if self.timer != None and self.timer_running(self.timer):
-            self.log("Switch manually triggered, cancelling timer")
-            self.cancel_timer(self.timer)
-            self.timer = None
+    def now(self):
+        return datetime.now().replace(microsecond=0)
 
+    def setup_timer(self, new_time):
+        now = self.now()
+        diff = new_time - now
+        if 0 > diff.total_seconds():
+            self.log(f"Warning: time updated, but its behind current time by: {now - new_time}, aborting")
+            self.switch.turn_on()
+        else:
+            self.log(f"Time updated, washing machine will run in {diff} hours at: {new_time}")
+            self.timer = self.run_at(self.time_reached, new_time)
+            self.switch.turn_off()
 
     def time_updated(self, entity, attribute, old, new, cb_args):
         if self.timer != None and self.timer_running(self.timer):
             self.cancel_timer(self.timer)
             self.timer = None
-        now  = datetime.now().replace(microsecond=0)
         new_time = datetime.fromtimestamp(new).replace(microsecond=0)
-        diff = new_time - now
-        if 0 > diff.total_seconds():
-            self.log(f"Error: time updated, but its behind current time by: {now - new_time} hours, aborting")
-            self.switch.turn_on()
-            return
-        self.log(f"Time updated, washing machine will run in {diff} hours at: {new_time}")
-        self.timer = self.run_at(self.time_reached, new_time)
-        self.switch.turn_off()
-
+        self.setup_timer(new_time)
 
     def time_reached(self, cb_args):
         self.log("Time reached, turning on washing machine")
