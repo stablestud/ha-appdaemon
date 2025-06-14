@@ -10,7 +10,8 @@ class AirFilter3DPrinter(ha.Hass):
     class FanUsage(enum.Enum):
         DOOR_OPENED = 1,
         PRINTING    = 2,
-        ENCLOSURE_PM25 = 3
+        ENCLOSURE_PM25 = 3,
+        STOREROOM_PM25 = 4
     
     class FanSpeed(enum.IntEnum):
         OFF    = 0,
@@ -19,17 +20,19 @@ class AirFilter3DPrinter(ha.Hass):
         FAST   = 3
 
     class PM25Thresholds(enum.IntEnum):
-        GREEN  = -1,
-        YELLOW = 5,
-        RED    = 25
+        OFF    = -1,
+        LOW    = 5,
+        HIGH   = 50
 
     def initialize(self):
         self.set_namespace("homeassistant")
         self.fan_usage = {}
         self.initialize_args()
         self.initialize_listen_states()
-        pm25 = self.enclosure_air_pm25.get_state("state")
-        self.set_pm25_fan_speed(self.get_pollution_level(pm25), pm25)
+        enclosure_pm25 = self.enclosure_air_pm25.get_state("state")
+        storeroom_pm25 = self.storeroom_air_pm25.get_state("state")
+        self.set_enclosure_pm25_fan_speed(self.get_pollution_level(enclosure_pm25), enclosure_pm25)
+        self.set_storeroom_pm25_fan_speed(self.get_pollution_level(storeroom_pm25), storeroom_pm25)
 
     def initialize_args(self):
         self.fan = self.get_entity(self.args["entity_fan"])
@@ -37,6 +40,7 @@ class AirFilter3DPrinter(ha.Hass):
         self.enclosure_door = self.get_entity(self.args["entity_enclosure_door"])
         self.enclosure_air_pm25 = self.get_entity(self.args["entity_enclosure_air_pm25"])
         self.enclosure_air_dirty = self.get_entity(self.args["entity_enclosure_air_dirty"])
+        self.storeroom_air_pm25 = self.get_entity(self.args["entity_storeroom_air_pm25"])
         self.timer_enclosure_door_opened = self.get_entity(self.args["entity_timer_enclosure_door_opened"])
         self.timer_print_ended = self.get_entity(self.args["entity_timer_print_ended"])
         self.timestamp_print_started = self.get_entity(self.args["entity_timestamp_print_started"])
@@ -46,6 +50,7 @@ class AirFilter3DPrinter(ha.Hass):
         self.enclosure_door.listen_state(self.enclosure_door_opened, new="on")
         self.enclosure_door.listen_state(self.enclosure_door_closed, new="off")
         self.enclosure_air_pm25.listen_state(self.enclosure_air_pm25_changed)
+        self.storeroom_air_pm25.listen_state(self.storeroom_air_pm25_changed)
         self.listen_event(self.timer_enclosure_door_opened_finished, "timer.finished", entity_id = self.args["entity_timer_enclosure_door_opened"])
         self.listen_event(self.timer_print_ended_finished, "timer.finished", entity_id = self.args["entity_timer_print_ended"])
         self.printer.listen_state(self.print_started, new="printing")
@@ -79,37 +84,53 @@ class AirFilter3DPrinter(ha.Hass):
             pm25 = int(pm25)
         except ValueError:
             pass
-        if isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.RED:
-            return self.PM25Thresholds.RED
-        elif isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.YELLOW:
-            return self.PM25Thresholds.YELLOW
+        if isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.HIGH:
+            return self.PM25Thresholds.HIGH
+        elif isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.LOW:
+            return self.PM25Thresholds.LOW
         else:
-            return self.PM25Thresholds.GREEN
+            return self.PM25Thresholds.OFF
 
-    def set_pm25_fan_speed(self, level, pm25):
-        switch = { self.PM25Thresholds.GREEN: self.FanSpeed.OFF }
+    def set_enclosure_pm25_fan_speed(self, level, pm25):
+        switch = { self.PM25Thresholds.OFF: self.FanSpeed.OFF }
         if self.is_enclosure_door_open():
-            switch[self.PM25Thresholds.YELLOW] = self.FanSpeed.NORMAL
-            switch[self.PM25Thresholds.RED] = self.FanSpeed.FAST
+            switch[self.PM25Thresholds.LOW] = self.FanSpeed.NORMAL
+            switch[self.PM25Thresholds.HIGH] = self.FanSpeed.FAST
         else:
-            switch[self.PM25Thresholds.YELLOW] = self.FanSpeed.SLOW
-            switch[self.PM25Thresholds.RED] = self.FanSpeed.SLOW
+            switch[self.PM25Thresholds.LOW] = self.FanSpeed.SLOW
+            switch[self.PM25Thresholds.HIGH] = self.FanSpeed.SLOW
         fan_speed = switch.get(level)
         already_applied = self.FanUsage.ENCLOSURE_PM25 in self.fan_usage
         if (not already_applied and fan_speed != self.FanSpeed.OFF) or (already_applied and self.fan_usage[self.FanUsage.ENCLOSURE_PM25] != fan_speed):
             self.log(f"Detected enclosure pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} MG/m3)")
             self.set_fan_usage(self.FanUsage.ENCLOSURE_PM25, switch.get(level))
 
+    def set_storeroom_pm25_fan_speed(self, level, pm25):
+        switch = { self.PM25Thresholds.OFF:  self.FanSpeed.OFF,
+                   self.PM25Thresholds.LOW:    self.FanSpeed.NORMAL,
+                   self.PM25Thresholds.HIGH:   self.FanSpeed.FAST }
+        fan_speed = switch.get(level)
+        already_applied = self.FanUsage.STOREROOM_PM25 in self.fan_usage
+        if (not already_applied and fan_speed != self.FanSpeed.OFF) or (already_applied and self.fan_usage[self.FanUsage.STOREROOM_PM25] != fan_speed):
+            self.log(f"Detected storeroom pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} MG/m3)")
+            self.set_fan_usage(self.FanUsage.STOREROOM_PM25, switch.get(level))
+
     def enclosure_air_pm25_changed(self, entity, attribute, old, new, cb_args):
         old_level = self.get_pollution_level(old)
         new_level = self.get_pollution_level(new)
         if old_level != new_level:
-            self.set_pm25_fan_speed(new_level, new)
+            self.set_enclosure_pm25_fan_speed(new_level, new)
+
+    def storeroom_air_pm25_changed(self, entity, attribute, old, new, cb_args):
+        old_level = self.get_pollution_level(old)
+        new_level = self.get_pollution_level(new)
+        if old_level != new_level:
+            self.set_storeroom_pm25_fan_speed(new_level, new)
 
     def enclosure_door_opened(self, entity, attribute, old, new, cb_args):
         self.log("Enclosure door opened")
         pm25 = self.enclosure_air_pm25.get_state("state")
-        self.set_pm25_fan_speed(self.get_pollution_level(pm25), pm25)
+        self.set_enclosure_pm25_fan_speed(self.get_pollution_level(pm25), pm25)
         if self.is_printing():
             if self.is_timer_enclosure_door_opened_active():
                 self.cancel_timer_enclosure_door_opened()
@@ -137,7 +158,7 @@ class AirFilter3DPrinter(ha.Hass):
     def enclosure_door_closed(self, entity, attribute, old, new, cb_args):
         self.log("Enclosure door closed")
         pm25 = self.enclosure_air_pm25.get_state("state")
-        self.set_pm25_fan_speed(self.get_pollution_level(pm25), pm25)
+        self.set_enclosure_pm25_fan_speed(self.get_pollution_level(pm25), pm25)
         if self.is_printing():
             if self.get_current_print_duration() > 30*60:
                 self.start_timer_enclosure_door_opened(15*60)
@@ -239,9 +260,9 @@ class AirFilter3DPrinter(ha.Hass):
 
     def pollution_to_str(self, level):
         switch = {
-                self.PM25Thresholds.GREEN  : "GREEN",
-                self.PM25Thresholds.YELLOW : "YELLOW",
-                self.PM25Thresholds.RED    : "RED"
+                self.PM25Thresholds.OFF    : "OFF",
+                self.PM25Thresholds.LOW    : "LOW",
+                self.PM25Thresholds.HIGH   : "HIGH"
         }
         return switch.get(level)
 

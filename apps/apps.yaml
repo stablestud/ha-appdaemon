@@ -5,6 +5,7 @@ AirFilter3DPrinter:
   entity_enclosure_door: "binary_sensor.0xa4c138821696c04c_contact"
   entity_enclosure_air_pm25: "sensor.0x385cfbfffeb9abd7_pm25"
   entity_enclosure_air_dirty: "input_boolean.appdaemon_airfilter3dprinter_air_dirty"
+  entity_storeroom_air_pm25: "sensor.storeroom_airmonitor_pm2_5"
   entity_printer: "sensor.3d_printer_current_print_state"
   entity_timer_enclosure_door_opened: "timer.appdaemon_airfilter3dprinter_door_opened"
   entity_timer_print_ended: "timer.appdaemon_airfilter3dprinter_print_ended"

@@ -8,3 +8,13 @@ source ./.venv/bin/activate*
 uv sync
 appdaemon -c $(pwd)
 ```
+
+## Secrets
+
+Secrets are stored in `secrets.yaml`
+
+It can be securely backed up into `rclone` cloud storage.
+For example:
+```
+rclone copy ./secrets.yaml secrets:appdaemon/
+```
