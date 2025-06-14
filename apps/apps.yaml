@@ -95,7 +95,7 @@ StateOffNotifier:
         - "pushover"
     - name: "Internet Power"
       msg_on: "RECOVERY: Internet power is now back ONLINE ({new})"
-      msg_off: "WARNING: Internet power went OFFLINE ({new}), we are completely blind"
+      msg_off: "WARNING: Internet power went OFFLINE ({new}), running now on UPS"
       listen_entity: "switch.0x70b3d52b6009898c"
       notify_targets:
         - "pushover"

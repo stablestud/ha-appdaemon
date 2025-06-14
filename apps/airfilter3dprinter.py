@@ -22,7 +22,7 @@ class AirFilter3DPrinter(ha.Hass):
     class PM25Thresholds(enum.IntEnum):
         OFF    = -1,
         LOW    = 5,
-        HIGH   = 50
+        HIGH   = 25
 
     def initialize(self):
         self.set_namespace("homeassistant")
