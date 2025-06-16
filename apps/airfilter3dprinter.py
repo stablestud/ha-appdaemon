@@ -107,8 +107,8 @@ class AirFilter3DPrinter(ha.Hass):
 
     def set_storeroom_pm25_fan_speed(self, level, pm25):
         switch = { self.PM25Thresholds.OFF:  self.FanSpeed.OFF,
-                   self.PM25Thresholds.LOW:    self.FanSpeed.NORMAL,
-                   self.PM25Thresholds.HIGH:   self.FanSpeed.FAST }
+                   self.PM25Thresholds.LOW:    self.FanSpeed.SLOW,
+                   self.PM25Thresholds.HIGH:   self.FanSpeed.NORMAL }
         fan_speed = switch.get(level)
         already_applied = self.FanUsage.STOREROOM_PM25 in self.fan_usage
         if (not already_applied and fan_speed != self.FanSpeed.OFF) or (already_applied and self.fan_usage[self.FanUsage.STOREROOM_PM25] != fan_speed):
