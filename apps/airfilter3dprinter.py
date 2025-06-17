@@ -30,7 +30,7 @@ class AirFilter3DPrinter(ha.Hass):
         self.initialize_args()
         self.initialize_listen_states()
         enclosure_pm25 = self.enclosure_air_pm25.get_state("state")
-        storeroom_pm25 = self.storeroom_air_pm25.get_state("state")
+        storeroom_pm25 = self.storeroom_pm25_adjust(self.storeroom_air_pm25.get_state("state"))
         self.set_enclosure_pm25_fan_speed(self.get_pollution_level(enclosure_pm25), enclosure_pm25)
         self.set_storeroom_pm25_fan_speed(self.get_pollution_level(storeroom_pm25), storeroom_pm25)
 
@@ -64,6 +64,9 @@ class AirFilter3DPrinter(ha.Hass):
         self.set_fan_usage(self.FanUsage.PRINTING, self.FanSpeed.SLOW)
         if self.is_enclosure_door_open():
             self.set_fan_usage(self.FanUsage.DOOR_OPENED, self.FanSpeed.FAST)
+
+    def storeroom_pm25_adjust(self, value):
+        return max(0, int(value)-5)
 
     def print_ended(self, entity, attribute, old, new, cb_args):
         self.log("Print ended")
@@ -102,7 +105,7 @@ class AirFilter3DPrinter(ha.Hass):
         fan_speed = switch.get(level)
         already_applied = self.FanUsage.ENCLOSURE_PM25 in self.fan_usage
         if (not already_applied and fan_speed != self.FanSpeed.OFF) or (already_applied and self.fan_usage[self.FanUsage.ENCLOSURE_PM25] != fan_speed):
-            self.log(f"Detected enclosure pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} MG/m3)")
+            self.log(f"Detected enclosure pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} Mg/m^3)")
             self.set_fan_usage(self.FanUsage.ENCLOSURE_PM25, switch.get(level))
 
     def set_storeroom_pm25_fan_speed(self, level, pm25):
@@ -112,7 +115,7 @@ class AirFilter3DPrinter(ha.Hass):
         fan_speed = switch.get(level)
         already_applied = self.FanUsage.STOREROOM_PM25 in self.fan_usage
         if (not already_applied and fan_speed != self.FanSpeed.OFF) or (already_applied and self.fan_usage[self.FanUsage.STOREROOM_PM25] != fan_speed):
-            self.log(f"Detected storeroom pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} MG/m3)")
+            self.log(f"Detected storeroom pollution level: {self.pollution_to_str(level)} (PM2.5: {pm25} Mg/m^3)")
             self.set_fan_usage(self.FanUsage.STOREROOM_PM25, switch.get(level))
 
     def enclosure_air_pm25_changed(self, entity, attribute, old, new, cb_args):
@@ -122,8 +125,8 @@ class AirFilter3DPrinter(ha.Hass):
             self.set_enclosure_pm25_fan_speed(new_level, new)
 
     def storeroom_air_pm25_changed(self, entity, attribute, old, new, cb_args):
-        old_level = self.get_pollution_level(old)
-        new_level = self.get_pollution_level(new)
+        old_level = self.get_pollution_level(self.storeroom_pm25_adjust(old))
+        new_level = self.get_pollution_level(self.storeroom_pm25_adjust(new))
         if old_level != new_level:
             self.set_storeroom_pm25_fan_speed(new_level, new)
 
