@@ -66,7 +66,10 @@ class AirFilter3DPrinter(ha.Hass):
             self.set_fan_usage(self.FanUsage.DOOR_OPENED, self.FanSpeed.FAST)
 
     def storeroom_pm25_adjust(self, value):
-        return max(0, int(value)-5)
+        try:
+            return max(0, int(value)-5)
+        except ValueError:
+            return 0
 
     def print_ended(self, entity, attribute, old, new, cb_args):
         self.log("Print ended")
@@ -86,7 +89,7 @@ class AirFilter3DPrinter(ha.Hass):
         try:
             pm25 = int(pm25)
         except ValueError:
-            pass
+            return self.PM25Thresholds.OFF
         if isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.HIGH:
             return self.PM25Thresholds.HIGH
         elif isinstance(pm25, numbers.Number) and pm25 >= self.PM25Thresholds.LOW:
