@@ -140,9 +140,17 @@ TagReader:
       action: "select_spool"
     - tag_id: "null_spool"
       action: "select_spool"
+    - tag_id: "force_storeroom_light"
+      action:
+        name: "execute_service"
+        action_args:
+          namespace: "default"
+          service: "storeroom/light"
+          service_args:
+            state: "on"
   actions:
     - name: "select_spool"
-      data:
+      action_args:
         spoolman_device: "5f848ff3dd07eb613c4624bd51d9baba" # for getting all spools
         spoolman_integration: "01JYA6NY5BH2J501TD89CDDE2T"  # for refreshing information about all spools
         moonraker_url: "http://3dprinter.internal:7125/server/spoolman/spool_id"
