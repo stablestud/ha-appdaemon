@@ -4,11 +4,6 @@ appdaemon:
   longitude: !secret longitude
   elevation: !secret elevation
   plugins:
-    homeassistant:
-      type: hass
-      namespace: homeassistant
-      ha_url: !secret ha_url
-      token: !secret ha_token
     mqtt:
       type: mqtt
       client_id: !secret mqtt_client
@@ -17,6 +12,13 @@ appdaemon:
       client_port: 1883
       client_user: !secret mqtt_user
       client_password: !secret mqtt_password
+    homeassistant:
+      type: hass
+      namespace: homeassistant
+      ha_url: !secret ha_url
+      token: !secret ha_token
+  exclude_dirs:
+    - .venv
 http:
   url: http://127.0.0.1:5050
 api:

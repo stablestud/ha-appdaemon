@@ -118,3 +118,31 @@ StateOffNotifier:
       listen_entity: "binary_sensor.0xa4c138bf9c6513df_water_leak"
       notify_targets:
         - "pushover"
+TagReader:
+  module: tagreader
+  class: TagReader
+  tags:
+    - tag_id: "box1:slot1"
+      action: "select_spool"
+    - tag_id: "box1:slot2"
+      action: "select_spool"
+    - tag_id: "box1:slot3"
+      action: "select_spool"
+    - tag_id: "box1:slot4"
+      action: "select_spool"
+    - tag_id: "box2:slot1"
+      action: "select_spool"
+    - tag_id: "box2:slot2"
+      action: "select_spool"
+    - tag_id: "box2:slot3"
+      action: "select_spool"
+    - tag_id: "box2:slot4"
+      action: "select_spool"
+    - tag_id: "null_spool"
+      action: "select_spool"
+  actions:
+    - name: "select_spool"
+      data:
+        spoolman_device: "5f848ff3dd07eb613c4624bd51d9baba" # for getting all spools
+        spoolman_integration: "01JYA6NY5BH2J501TD89CDDE2T"  # for refreshing information about all spools
+        moonraker_url: "http://3dprinter.internal:7125/server/spoolman/spool_id"
