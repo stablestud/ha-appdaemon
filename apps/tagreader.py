@@ -24,7 +24,6 @@ class TagReader(ha.Hass):
         for tag in self.args["tags"]:
             if isinstance(tag["action"], str):
                 action = tag["action"]
-
             elif isinstance(tag["action"], dict):
                 action = tag["action"]["name"]
             assert action is not None, f"failed to read action name for tag '{tag['tag_id']}'"
@@ -44,36 +43,6 @@ class TagReader(ha.Hass):
         assert callable(callback), f"Callback '{action}' is not callable"
         return callback
 
-    def select_spool(self, event_name, event_data, kwargs):
-        action_args = kwargs.get("action_args")
-        self.reload_spools(action_args["spoolman_device"], action_args["spoolman_integration"])
-        self.log(f"Tag read for {event_data['name']}")
-        spool_id = 0
-        spool_friendly_name = None
-        if event_data["tag_id"] != "null_spool":
-            spool_entity = self.get_spool_entity(action_args["spoolman_device"], event_data["tag_id"])
-            if spool_entity is None:
-                self.log(f"Warning: no spool found for {event_data['name']}")
-                return
-            spool_id = spool_entity.get_state(attribute="id")
-            spool_friendly_name = spool_entity.get_state(attribute='friendly_name')
-        response = requests.post(action_args["moonraker_url"], json={"spool_id": spool_id})
-        if response.status_code == 200:
-            self.log(f"Successfully set '{spool_friendly_name}' as active spool")
-        else:
-            self.log(f"Error: Failed to set '{spool_friendly_name}' as active spool: {response.status_code} {response.text}")
-
-
-    def get_spool_entity(self, spoolman_device, tag_id):
-        for spool in self.device_entities(spoolman_device):
-            spool_entity = self.get_entity(spool)
-            if spool_entity.get_state(attribute="extra_tag_id") == tag_id:
-                return spool_entity
-        return None
-
-    def reload_spools(self, spoolman_device, spoolman_integration):
-        self.call_service(service="homeassistant/reload_config_entry", device_id=spoolman_device, entry_id=spoolman_integration)
-
     def execute_service(self, event_name, event_data, kwargs):
         action_args = kwargs.get("action_args")
         self.log(f"Tag read for {event_data['name']}")
@@ -85,3 +54,35 @@ class TagReader(ha.Hass):
         if "service_args" in action_args:
             service_args = action_args["service_args"]
         self.call_service(service=action_args["service"], namespace=action_args["namespace"], service_args=service_args)
+
+
+    ## Spoolman actions
+
+    def select_spool(self, event_name, event_data, kwargs):
+        action_args = kwargs.get("action_args")
+        self.log(f"Tag read for {event_data['name']}")
+        spool_id = 0
+        spool_friendly_name = None
+        if event_data["tag_id"] != "null_spool":
+            spool_entity = self.get_spool_entity(self.get_spools(action_args["spoolman_url"]), event_data["tag_id"])
+            if spool_entity is None:
+                self.log(f"Warning: no spool found for {event_data['name']}")
+                return
+            spool_id = spool_entity["id"]
+            spool_friendly_name = spool_entity["filament"]["vendor"]["name"] + " " + spool_entity["filament"]["name"]
+        response = requests.post(action_args["moonraker_url"], json={"spool_id": spool_id})
+        if response.status_code == 200:
+            self.log(f"Successfully set '{spool_friendly_name}' as active spool")
+        else:
+            self.log(f"Error: Failed to set '{spool_friendly_name}' as active spool: {response.status_code} {response.text}")
+
+    def get_spools(self, spoolman_url):
+        response = requests.get(spoolman_url, timeout=5, headers={"Accept": "application/json"})
+        response.raise_for_status()
+        if "application/json" not in response.headers.get("Content-Type", ""):
+            raise ValueError("Response is not JSON")
+        self.log(response.json())
+        return response.json()
+
+    def get_spool_entity(self, spools, tag_id):
+        return next((item for item in spools if item.get("extra", {}).get("tag_id", "").lower().strip().replace('"', '') == tag_id.lower()), None)

@@ -151,6 +151,5 @@ TagReader:
   actions:
     - name: "select_spool"
       action_args:
-        spoolman_device: "5f848ff3dd07eb613c4624bd51d9baba" # for getting all spools
-        spoolman_integration: "01JYA6NY5BH2J501TD89CDDE2T"  # for refreshing information about all spools
+        spoolman_url: "http://3dprinter.internal:7912/api/v1/spool" # for getting all spools
         moonraker_url: "http://3dprinter.internal:7125/server/spoolman/spool_id"
