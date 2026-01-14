@@ -81,7 +81,6 @@ class TagReader(ha.Hass):
         response.raise_for_status()
         if "application/json" not in response.headers.get("Content-Type", ""):
             raise ValueError("Response is not JSON")
-        self.log(response.json())
         return response.json()
 
     def get_spool_entity(self, spools, tag_id):
