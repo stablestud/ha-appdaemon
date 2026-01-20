@@ -38,6 +38,16 @@ MQTTStateRetainer:
       target: "3dprinter/external_sensors/light"
       values:
         - "state"
+    - source: "zigbee2mqtt/3D Printer Filament Box 1"
+      target: "3dprinter/external_sensors/box1"
+      values:
+        - "temperature"
+        - "humidity"
+    - source: "zigbee2mqtt/3D Printer Filament Box 2"
+      target: "3dprinter/external_sensors/box2"
+      values:
+        - "temperature"
+        - "humidity"
 Firealarm3DPrinter:
   module: firealarm3dprinter
   class: Firealarm3DPrinter
