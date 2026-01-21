@@ -48,6 +48,19 @@ MQTTStateRetainer:
       values:
         - "temperature"
         - "humidity"
+    - source: "zigbee2mqtt/3D Printer Enclosure Door"
+      target: "3dprinter/external_sensors/enclosure_door"
+      values:
+        - "contact"
+    - source: "zigbee2mqtt/Storeroom Door"
+      target: "3dprinter/external_sensors/storeroom_door"
+      values:
+        - "contact"
+    - source: "zigbee2mqtt/Storeroom Temperature"
+      target: "3dprinter/external_sensors/storeroom_air"
+      values:
+        - "temperature"
+        - "humidity"
 Firealarm3DPrinter:
   module: firealarm3dprinter
   class: Firealarm3DPrinter
