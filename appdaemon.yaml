@@ -19,6 +19,10 @@ appdaemon:
       token: !secret ha_token
   exclude_dirs:
     - .venv
+logs:
+  dev_log:
+    name: dev_log
+    filename: ./dev.log
 http:
   url: http://127.0.0.1:5050
 api:

@@ -176,3 +176,10 @@ TagReader:
       action_args:
         spoolman_url: "http://3dprinter.internal:7912/api/v1/spool" # for getting all spools
         moonraker_url: "http://3dprinter.internal:7125/server/spoolman/spool_id"
+Ha2MQTT:
+  module: ha2mqtt
+  class: Ha2MQTT
+  entities:
+    - id: "sensor.storeroom_airmonitor_pm2_5"
+      topic: "3dprinter/external_sensors/storeroom_air_pm25"
+      retain: True
