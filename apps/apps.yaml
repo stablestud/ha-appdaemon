@@ -2,8 +2,8 @@ AirFilter3DPrinter:
   module: airfilter3dprinter
   class: AirFilter3DPrinter
   entity_fan: "fan.storeroom_air_purifier"
-  entity_enclosure_door: "binary_sensor.0xa4c138821696c04c_contact"
-  entity_enclosure_air_pm25: "sensor.0x385cfbfffeb9abd7_pm25"
+  entity_enclosure_door: "binary_sensor.3d_printer_enclosure_door_contact"
+  entity_enclosure_air_pm25: "sensor.3d_printer_air_monitor_pm25"
   entity_enclosure_air_dirty: "input_boolean.appdaemon_airfilter3dprinter_air_dirty"
   entity_storeroom_air_pm25: "sensor.storeroom_airmonitor_pm2_5"
   entity_printer: "sensor.3d_printer_current_print_state"
@@ -73,8 +73,8 @@ Firealarm3DPrinter:
 StoreroomMotion:
   module: storeroommotion
   class: StoreroomMotion
-  entity_sensor: "binary_sensor.0xa4c1389a61a3589f_occupancy"
-  entity_switch: "switch.0xa4c13884518f1949"
+  entity_sensor: "binary_sensor.storeroom_presence_occupancy"
+  entity_switch: "switch.storeroom_light_switch"
   entity_timer: "timer.appdaemon_storeroommotion_light_timeout"
   motion_timeout: 5
   manual_timeout: 15
@@ -90,7 +90,7 @@ WashingMachineTimer:
   module: washingmachinetimer
   class: WashingMachineTimer
   entity_time: "input_datetime.appdaemon_washingmachinetimer_time"
-  entity_switch: "switch.0xa4c138b870fa6bd7"
+  entity_switch: "switch.washing_machine_switch"
 StateOffNotifier:
   module: stateoffnotifier
   class: StateOffNotifier
@@ -98,14 +98,14 @@ StateOffNotifier:
     - name: "Smarthome Power"
       msg_on: "RECOVERY: Smarthome power is now back ONLINE ({new})"
       msg_off: "WARNING: Smarthome power went OFFLINE ({new}), running now on UPS"
-      listen_entity: "switch.0x70b3d52b6008ac57"
+      listen_entity: "switch.bedroom_desk_power"
       notify_targets:
         - "pushover"
         - "persistent_notification"
     - name: "Fridge Power"
       msg_on: "RECOVERY: Fridge power is now back ONLINE ({new})"
       msg_off: "WARNING: Fridge power went OFFLINE ({new}), products may start to go bad"
-      listen_entity: "switch.0x70b3d52b6005d45a"
+      listen_entity: "switch.fridge_power"
       notify_targets:
         - "pushover"
         - "persistent_notification"
@@ -113,31 +113,32 @@ StateOffNotifier:
     - name: "3D Printer Power"
       msg_on: "RECOVERY: 3D Printer power is now back ONLINE ({new})"
       msg_off: "WARNING: 3D Printer power went OFFLINE ({new}), print might have failed"
-      listen_entity: "switch.0x914805602bd5b370"
+      listen_entity: "switch.3d_printer_power"
       notify_targets:
         - "pushover"
     - name: "Internet Power"
       msg_on: "RECOVERY: Internet power is now back ONLINE ({new})"
       msg_off: "WARNING: Internet power went OFFLINE ({new}), running now on UPS"
-      listen_entity: "switch.0x70b3d52b6009898c"
+      listen_entity: "switch.infrastructure_power"
       notify_targets:
         - "pushover"
         - "persistent_notification"
     - name: "Computer Power"
       msg_on: "RECOVERY: Computer power is now back ONLINE ({new})"
       msg_off: "WARNING: Computer power went OFFLINE ({new}), might have lossed some unsaved data"
-      listen_entity: "switch.0x70b3d52b6007823f"
+      listen_entity: "switch.computer_power"
       notify_targets:
         - "pushover"
     - name: "Dishwasher Power"
       msg_on: "RECOVERY: Dishwasher power is now back ONLINE ({new})"
       msg_off: "WARNING: Dishwasher power went OFFLINE ({new}), might have interrupted mid washing"
-      listen_entity: "switch.0xa4c1387f849f5ade"
+      listen_entity: "switch.dishwasher_power"
       notify_targets:
         - "pushover"
     - name: "Washmachine Leakage"
       msg_on: "WARNING: Washing machine is leaking water"
       msg_off: "RECOVERY: Washing machine leakage has been cleared"
+      # TODO
       listen_entity: "binary_sensor.0xa4c138bf9c6513df_water_leak"
       notify_targets:
         - "pushover"

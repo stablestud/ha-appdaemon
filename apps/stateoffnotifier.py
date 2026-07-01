@@ -27,7 +27,7 @@ Configuration:
 '''
 class StateOffNotifier(ha.Hass):
 
-    DEFAULT_DELAY_TIME = 300
+    DEFAULT_DELAY_TIME = 900
     DEFAULT_DELAY_STATES = [ "unavailable", "unknown" ]
     DEFAULT_OFF_STATES = ["off", "unavailable", "unknown"]
     REQUIRED_FIELDS = ["name", "msg_on", "msg_off", "listen_entity", "notify_targets"]
