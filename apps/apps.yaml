@@ -142,6 +142,19 @@ StateOffNotifier:
       listen_entity: "binary_sensor.0xa4c138bf9c6513df_water_leak"
       notify_targets:
         - "pushover"
+StateIntervalChanger:
+  module: stateintervalchanger
+  class: StateIntervalChanger
+  jobs:
+    - name: "Cat Fountain"
+      entity: "switch.cat_fountain"
+      states:
+        - state: "on"
+          service: "switch/turn_on"
+          duration: 60
+        - state: "off"
+          duration: 900
+          service: "switch/turn_off"
 TagReader:
   module: tagreader
   class: TagReader
