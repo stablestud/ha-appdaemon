@@ -155,6 +155,23 @@ StateIntervalChanger:
         - state: "off"
           duration: 900
           service: "switch/turn_off"
+StateTriggerAction:
+  module: statetriggeraction
+  class: StateTriggerAction
+  workflows:
+    - name: "computer_on"
+      trigger:
+        type: "mqtt"
+        topic: "zigbee2mqtt/Bedroom Desk Button/action"
+        states:
+          - "on"
+          - "single"
+      action: "wake_computer"
+  actions:
+    - name: "wake_computer"
+      action_args:
+        power_entity: "switch.computer_power"
+        wol_entity: "button.storeroom_wake_on_lan_gentude"
 TagReader:
   module: tagreader
   class: TagReader

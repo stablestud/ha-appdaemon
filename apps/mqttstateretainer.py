@@ -35,7 +35,7 @@ class MQTTStateRetainer(mqtt.Mqtt):
         if missing_keys:
             raise KeyError(f"Missing state obj fields: {', '.join(missing_keys)}")
 
-    def mqtt_message_received_event(self, event_name, data, kwargs):
+    def mqtt_message_received_event(self, event_name, data, **kwargs):
         data = json.loads(data["payload"])
         sensor = kwargs.get("sensor")
         payload = {}

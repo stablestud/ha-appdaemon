@@ -43,7 +43,7 @@ class TagReader(ha.Hass):
         assert callable(callback), f"Callback '{action}' is not callable"
         return callback
 
-    def execute_service(self, event_name, event_data, kwargs):
+    def execute_service(self, event_name, event_data, **kwargs):
         action_args = kwargs.get("action_args")
         self.log(f"Tag read for {event_data['name']}")
         service_args = {}
@@ -58,7 +58,7 @@ class TagReader(ha.Hass):
 
     ## Spoolman actions
 
-    def select_spool(self, event_name, event_data, kwargs):
+    def select_spool(self, event_name, event_data, **kwargs):
         action_args = kwargs.get("action_args")
         self.log(f"Tag read for {event_data['name']}")
         spool_id = 0
