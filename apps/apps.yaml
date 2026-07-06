@@ -138,8 +138,7 @@ StateOffNotifier:
     - name: "Washmachine Leakage"
       msg_on: "WARNING: Washing machine is leaking water"
       msg_off: "RECOVERY: Washing machine leakage has been cleared"
-      # TODO
-      listen_entity: "binary_sensor.0xa4c138bf9c6513df_water_leak"
+      listen_entity: "binary_sensor.washing_machine_leak_water_leak"
       notify_targets:
         - "pushover"
 StateIntervalChanger:
@@ -166,12 +165,47 @@ StateTriggerAction:
         states:
           - "on"
           - "single"
-      action: "wake_computer"
-  actions:
-    - name: "wake_computer"
-      action_args:
-        power_entity: "switch.computer_power"
-        wol_entity: "button.storeroom_wake_on_lan_gentude"
+      action:
+        name: "wake_computer"
+        action_args:
+          power_switch: "switch.computer_power"
+          wol_device: "switch.gentude_power"
+    - name: "computer_off"
+      trigger:
+        type: "mqtt"
+        topic: "zigbee2mqtt/Bedroom Desk Button/action"
+        states:
+          - "off"
+          - "double"
+      action:
+        name: "shutdown_computer"
+        action_args:
+          device: "switch.gentude_power"
+    - name: "tv_on"
+      trigger:
+        type: "mqtt"
+        topic: "zigbee2mqtt/TV Button/action"
+        states:
+          - "on"
+          - "single"
+      action:
+        name: "wake_computer"
+        action_args:
+          power_switch: "switch.tv_power"
+          wol_device: "switch.livingroom_tv_power"
+    - name: "tv_off"
+      trigger:
+        type: "mqtt"
+        topic: "zigbee2mqtt/TV Button/action"
+        states:
+          - "off"
+          - "double"
+      action:
+        name: "shutdown_tv"
+        action_args:
+          power_switch: "switch.tv_power"
+          device: "switch.livingroom_tv_power"
+          device_status: "binary_sensor.livingroom_tv_ssh_status"
 TagReader:
   module: tagreader
   class: TagReader

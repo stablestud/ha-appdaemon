@@ -69,7 +69,7 @@ class StateTriggerAction(ha.Hass):
         self.listen_event(callback=self.get_action_callback(action), namespace="mqtt", event="MQTT_MESSAGE", topic=topic, workflow=workflow)
 
     def setup_ha_trigger(self, workflow, action):
-        pass
+        raise ValueError("type: ha not implemented")
 
     def get_action_args(self, workflow):
         if "action_args" in workflow["action"]:
@@ -84,22 +84,62 @@ class StateTriggerAction(ha.Hass):
         assert callable(callback), f"Callback '{action}' is not callable"
         return callback
 
+    # Action functions below
+
     def wake_computer(self, event_name, event_data, **kwargs):
         data = None;
         workflow = kwargs.get("workflow")
         action_args = self.get_action_args(workflow)
-        if isinstance(workflow["action"], dict):
+        if isinstance(workflow["trigger"]["states"], dict):
             data = json.loads(event_data["payload"])
+            raise ValueError("JSON payload not yet implemented")
         else:
             data = event_data["payload"]
-        if data not in workflow["trigger"]["states"]:
-            return
+            if data not in workflow["trigger"]["states"]:
+                return False
         self.log(f"[{workflow["name"]}]: triggered WOL")
         self.set_namespace("homeassistant")
-        power_plug = self.get_entity(action_args["power_entity"])
-        wol_device = self.get_entity(action_args["wol_entity"])
+        power_plug = self.get_entity(action_args["power_switch"])
+        wol_device = self.get_entity(action_args["wol_device"])
         if power_plug.get_state() != "on":
-            self.log("is NOT on")
             power_plug.turn_on()
             time.sleep(3)
-        wol_device.call_service(service="press")
+        wol_device.turn_on()
+        return True
+
+    def shutdown_computer(self, event_name, event_data, **kwargs):
+        data = None;
+        workflow = kwargs.get("workflow")
+        action_args = self.get_action_args(workflow)
+        if isinstance(workflow["trigger"]["states"], dict):
+            data = json.loads(event_data["payload"])
+            raise ValueError("JSON payload not yet implemented")
+        else:
+            data = event_data["payload"]
+            if data not in workflow["trigger"]["states"]:
+                return False
+        self.log(f"[{workflow["name"]}]: triggered shutdown")
+        self.set_namespace("homeassistant")
+        computer = self.get_entity(action_args["device"])
+        computer.turn_off()
+        return True
+
+    def shutdown_tv(self, event_name, event_data, **kwargs):
+        workflow = kwargs.get("workflow")
+        action_args = self.get_action_args(workflow)
+        device_status = self.get_entity(action_args["device_status"])
+        power_plug = self.get_entity(action_args["power_switch"])
+        if isinstance(workflow["trigger"]["states"], dict):
+            data = json.loads(event_data["payload"])
+            raise ValueError("JSON payload not yet implemented")
+        else:
+            data = event_data["payload"]
+            if data not in workflow["trigger"]["states"]:
+                return False
+        if device_status.get_state() not in ("unavailable", "unknown", "disconnected", "off"):
+            if not self.shutdown_computer(event_name, event_data, **kwargs):
+                return False
+            self.set_namespace("homeassistant")
+            time.sleep(45)
+        self.log(f"[{workflow["name"]}]: turning power off")
+        power_plug.turn_off()
