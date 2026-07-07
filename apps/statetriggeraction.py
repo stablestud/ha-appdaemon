@@ -34,7 +34,7 @@ workflows:
   - name: "Fountain2"
     trigger:
       type: "ha"
-      entity: "button.foutain"
+      entity: "button.fountain"
       states:
         - "on"
     action: "turn_on_fountain"
@@ -63,13 +63,15 @@ class StateTriggerAction(ha.Hass):
                 raise ValueError(f"unknown trigger type: {workflow["trigger"]["type"]}")
 
     def setup_mqtt_trigger(self, workflow, action):
+        assert workflow["trigger"]["topic"] is not None, f"failed to read MQTT trigger topic for workflow '{workflow["name"]}'"
         topic = workflow["trigger"]["topic"]
-        assert topic is not None, f"failed to read MQTT trigger topic for workflow '{workflow["name"]}'"
         self.call_service("mqtt/subscribe", namespace="mqtt", topic=topic)
         self.listen_event(callback=self.get_action_callback(action), namespace="mqtt", event="MQTT_MESSAGE", topic=topic, workflow=workflow)
 
     def setup_ha_trigger(self, workflow, action):
-        raise ValueError("type: ha not implemented")
+        assert workflow["trigger"]["entity"] is not None, f"failed to read MQTT trigger topic for workflow '{workflow["name"]}'"
+        entity = workflow["trigger"]["entity"]
+        self.listen_event(callback=self.get_action_callback(action), namespace="homeassistant", event="state_changed", entity_id=entity, workflow=workflow)
 
     def get_action_args(self, workflow):
         if "action_args" in workflow["action"]:
@@ -86,10 +88,19 @@ class StateTriggerAction(ha.Hass):
 
     def trigger_matches(self, workflow, event_data):
         trigger_states = workflow["trigger"]["states"]
-        if isinstance(trigger_states, dict):
-            json.loads(event_data["payload"])
-            raise ValueError("JSON payload not yet implemented")
-        return event_data["payload"] in trigger_states
+        if "payload" in event_data:
+            if isinstance(trigger_states, dict):
+                json.loads(event_data["payload"])
+                raise ValueError("JSON payload not yet implemented")
+            return event_data["payload"] in trigger_states
+        elif "new_state" in event_data:
+            if isinstance(trigger_states, dict):
+                json.loads(event_data["new_state"]["state"])
+                raise ValueError("JSON state not yet implemented")
+            return event_data["new_state"]["state"] in trigger_states
+        else:
+            raise ValueError("cannot extract state from event_data")
+
 
     def prepare_workflow(self, event_data, **kwargs):
         workflow = kwargs["workflow"]
