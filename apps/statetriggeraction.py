@@ -84,20 +84,26 @@ class StateTriggerAction(ha.Hass):
         assert callable(callback), f"Callback '{action}' is not callable"
         return callback
 
+    def trigger_matches(self, workflow, event_data):
+        trigger_states = workflow["trigger"]["states"]
+        if isinstance(trigger_states, dict):
+            json.loads(event_data["payload"])
+            raise ValueError("JSON payload not yet implemented")
+        return event_data["payload"] in trigger_states
+
+    def prepare_workflow(self, event_data, **kwargs):
+        workflow = kwargs["workflow"]
+        if not self.trigger_matches(workflow, event_data):
+            return None, None
+        return workflow, self.get_action_args(workflow)
+
     # Action functions below
 
     def wake_computer(self, event_name, event_data, **kwargs):
-        data = None;
-        workflow = kwargs.get("workflow")
-        action_args = self.get_action_args(workflow)
-        if isinstance(workflow["trigger"]["states"], dict):
-            data = json.loads(event_data["payload"])
-            raise ValueError("JSON payload not yet implemented")
-        else:
-            data = event_data["payload"]
-            if data not in workflow["trigger"]["states"]:
-                return False
-        self.log(f"[{workflow["name"]}]: triggered WOL")
+        workflow, action_args = self.prepare_workflow(event_data, **kwargs)
+        if workflow is None:
+            return False
+        self.log(f"[{workflow['name']}]: triggered WOL")
         self.set_namespace("homeassistant")
         power_plug = self.get_entity(action_args["power_switch"])
         wol_device = self.get_entity(action_args["wol_device"])
@@ -108,38 +114,25 @@ class StateTriggerAction(ha.Hass):
         return True
 
     def shutdown_computer(self, event_name, event_data, **kwargs):
-        data = None;
-        workflow = kwargs.get("workflow")
-        action_args = self.get_action_args(workflow)
-        if isinstance(workflow["trigger"]["states"], dict):
-            data = json.loads(event_data["payload"])
-            raise ValueError("JSON payload not yet implemented")
-        else:
-            data = event_data["payload"]
-            if data not in workflow["trigger"]["states"]:
-                return False
-        self.log(f"[{workflow["name"]}]: triggered shutdown")
+        workflow, action_args = self.prepare_workflow(event_data, **kwargs)
+        if workflow is None:
+            return False
+        self.log(f"[{workflow['name']}]: triggered shutdown")
         self.set_namespace("homeassistant")
         computer = self.get_entity(action_args["device"])
         computer.turn_off()
         return True
 
     def shutdown_tv(self, event_name, event_data, **kwargs):
-        workflow = kwargs.get("workflow")
-        action_args = self.get_action_args(workflow)
+        workflow, action_args = self.prepare_workflow(event_data, **kwargs)
+        if workflow is None:
+            return False
         device_status = self.get_entity(action_args["device_status"])
         power_plug = self.get_entity(action_args["power_switch"])
-        if isinstance(workflow["trigger"]["states"], dict):
-            data = json.loads(event_data["payload"])
-            raise ValueError("JSON payload not yet implemented")
-        else:
-            data = event_data["payload"]
-            if data not in workflow["trigger"]["states"]:
-                return False
-        if device_status.get_state() not in ("unavailable", "unknown", "disconnected", "off"):
-            if not self.shutdown_computer(event_name, event_data, **kwargs):
-                return False
-            self.set_namespace("homeassistant")
-            time.sleep(45)
-        self.log(f"[{workflow["name"]}]: turning power off")
+        if device_status.get_state() not in ( "unavailable", "unknown", "disconnected", "off",):
+            if self.shutdown_computer(event_name, event_data, **kwargs):
+                time.sleep(45)
+        self.log(f"[{workflow['name']}]: turning power off")
+        self.set_namespace("homeassistant")
         power_plug.turn_off()
+        return True
