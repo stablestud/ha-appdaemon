@@ -166,7 +166,7 @@ StateTriggerAction:
           - "on"
           - "single"
       action:
-        name: "wake_computer"
+        func: "wake_computer"
         action_args:
           power_switch: "switch.computer_power"
           wol_device: "switch.gentude_power"
@@ -178,7 +178,7 @@ StateTriggerAction:
           - "off"
           - "double"
       action:
-        name: "shutdown_computer"
+        func: "shutdown_computer"
         action_args:
           device: "switch.gentude_power"
     - name: "tv_on"
@@ -189,7 +189,7 @@ StateTriggerAction:
           - "on"
           - "single"
       action:
-        name: "wake_computer"
+        func: "wake_computer"
         action_args:
           power_switch: "switch.tv_power"
           wol_device: "switch.livingroom_tv_power"
@@ -201,11 +201,26 @@ StateTriggerAction:
           - "off"
           - "double"
       action:
-        name: "shutdown_tv"
+        func: "shutdown_tv"
         action_args:
           power_switch: "switch.tv_power"
           device: "switch.livingroom_tv_power"
           device_status: "binary_sensor.livingroom_tv_ssh_status"
+    - name: "restart_gdm"
+      trigger:
+        type: "ha"
+        entity_id: "select.bedroom_desk_button_operation_mode"
+        new_states:
+          - "command"
+          - "event"
+      action:
+        func: "execute_service"
+        action_args:
+          service: "ssh.execute_command"
+          target:
+            entity_id: "switch.gentude_power"
+          command: "/usr/bin/sudo systemctl restart gdm.service"
+          timeout: 10
 TagReader:
   module: tagreader
   class: TagReader
@@ -233,7 +248,7 @@ TagReader:
         name: "execute_service"
         action_args:
           namespace: "default"
-          service: "storeroom/light"
+          service: "storeroom.light"
           service_args:
             state: "on"
   actions:

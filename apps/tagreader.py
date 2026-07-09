@@ -53,8 +53,7 @@ class TagReader(ha.Hass):
             namespace = action_args["namespace"]
         if "service_args" in action_args:
             service_args = action_args["service_args"]
-        self.call_service(service=action_args["service"], namespace=action_args["namespace"], service_args=service_args)
-
+        self.call_service(service=action_args["service"].replace(".", "/"), namespace=action_args["namespace"], service_args=service_args)
 
     ## Spoolman actions
 

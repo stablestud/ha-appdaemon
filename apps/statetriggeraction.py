@@ -30,16 +30,30 @@ workflows:
       states:
         - "on"
         - "single"
-    action: "turn_on_fountain"
+    action: "Turn da Fountain on!"
   - name: "Fountain2"
     trigger:
       type: "ha"
       entity: "button.fountain"
-      states:
+      old_states:
+        - "off"
+      new_states:
         - "on"
-    action: "turn_on_fountain"
+    action:
+      name: "Run custom fountain cmd"
+      func: "execute_service"
+      action_args: # Take a look into Developer tools / Actions, almost everything can be taken over 1:1 from the actions
+        service: "switch.turn_on"
+        namespace: "homeassistant"
+        target:
+          entity_id: "switch.fountain"
+        data:
+          timeout: 16
+          command: "echo Hello World"
+
 actions:
-  - name: "turn_on_fountain"
+  - name: "Turn da Fountain on!"
+    func: "turn_on_fountain"
     action_args:
       fountain_entity: "switch.power_fountain"
 '''
@@ -49,10 +63,10 @@ class StateTriggerAction(ha.Hass):
         action = None
         for workflow in self.args["workflows"]:
             if isinstance(workflow["action"], str):
-                action = workflow["action"]
+                action = get_global_actions_func(workflow["action"])
             elif isinstance(workflow["action"], dict):
-                action = workflow["action"]["name"]
-            assert action is not None, f"failed to read action name for workflow '{workflow["name"]}'"
+                action = workflow["action"]["func"]
+            assert action is not None, f"failed to read action func for workflow '{workflow["name"]}'"
             assert action in StateTriggerAction.__dict__, f"action/function '{action}' not implemented in StateTriggerAction"
             assert "trigger" in workflow, f"failed to read trigger for workflow '{workflow["name"]}'"
             if "mqtt" == workflow["trigger"]["type"]:
@@ -69,9 +83,15 @@ class StateTriggerAction(ha.Hass):
         self.listen_event(callback=self.get_action_callback(action), namespace="mqtt", event="MQTT_MESSAGE", topic=topic, workflow=workflow)
 
     def setup_ha_trigger(self, workflow, action):
-        assert workflow["trigger"]["entity"] is not None, f"failed to read MQTT trigger topic for workflow '{workflow["name"]}'"
-        entity = workflow["trigger"]["entity"]
+        assert workflow["trigger"]["entity_id"] is not None, f"failed to read HA trigger entity_id for workflow '{workflow["name"]}'"
+        entity = workflow["trigger"]["entity_id"]
         self.listen_event(callback=self.get_action_callback(action), namespace="homeassistant", event="state_changed", entity_id=entity, workflow=workflow)
+
+    def get_global_actions_func(self, action_name):
+        for action in self.args["actions"]:
+            if action["name"] == action_name:
+                return action["func"]
+        raise ValueError(f"no such global defined action: {action_name}")
 
     def get_action_args(self, workflow):
         if "action_args" in workflow["action"]:
@@ -86,7 +106,7 @@ class StateTriggerAction(ha.Hass):
         assert callable(callback), f"Callback '{action}' is not callable"
         return callback
 
-    def trigger_matches(self, workflow, event_data):
+    def trigger_matches_mqtt(self, workflow, event_data):
         trigger_states = workflow["trigger"]["states"]
         if "payload" in event_data:
             if isinstance(trigger_states, dict):
@@ -101,6 +121,20 @@ class StateTriggerAction(ha.Hass):
         else:
             raise ValueError("cannot extract state from event_data")
 
+    def trigger_matches_ha(self, workflow, event_data):
+        trigger = workflow["trigger"]
+        matches = True
+        if "old_states" in trigger:
+            matches = event_data["old_state"]["state"] in trigger["old_states"] and matches
+        if "new_states" in trigger:
+            matches = event_data["new_state"]["state"] in trigger["new_states"] and matches
+        return matches
+
+    def trigger_matches(self, workflow, event_data):
+        if workflow["trigger"]["type"] == "ha":
+            return self.trigger_matches_ha(workflow, event_data)
+        elif workflow["trigger"]["type"] == "mqtt":
+            return self.trigger_matches_mqtt(workflow, event_data)
 
     def prepare_workflow(self, event_data, **kwargs):
         workflow = kwargs["workflow"]
@@ -147,3 +181,13 @@ class StateTriggerAction(ha.Hass):
         self.set_namespace("homeassistant")
         power_plug.turn_off()
         return True
+
+    def execute_service(self, event_name, event_data, **kwargs):
+        workflow, action_args = self.prepare_workflow(event_data, **kwargs)
+        if workflow is None:
+            return False
+        self.log(f"[{workflow['name']}]: executing service {action_args["service"]}")
+        namespace = "default"
+        assert "service" in action_args
+        action_args["service"] = action_args["service"].replace(".", "/")
+        self.call_service(**action_args)
